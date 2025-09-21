@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: deploy-test-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/p-o-d/helm-charts'
+    targetRevision: main
+    path: charts/deploy-test-app
+    helm:
+      values: |
+        namespace: apps
+        ingress:
+          hosts:
+            - host: deploy.local.lan
+              path: /
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: apps
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

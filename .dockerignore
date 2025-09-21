@@ -82,3 +82,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Deployment files
+deployment/
