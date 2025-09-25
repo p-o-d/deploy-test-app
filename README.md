@@ -6,6 +6,10 @@ A .NET 9.0 Web API application for testing deployment workflows with Docker cont
 
 Simple ASP.NET Core Web API with WeatherForecast endpoint, built with .NET 9.0 and Docker support. Includes Swagger UI for API documentation.
 
+## Version
+
+0.0.1
+
 ## Requirements
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) (for local development)
