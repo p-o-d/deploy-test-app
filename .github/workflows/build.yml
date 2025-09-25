@@ -1,0 +1,54 @@
+name: build
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/deploy-test-app:latest
+            ghcr.io/${{ github.repository_owner }}/deploy-test-app:${{ github.sha }}
+
+      - name: Checkout helm-charts repo
+        uses: actions/checkout@v4
+        with:
+          repository: p-o-d/helm-charts
+          token: ${{ secrets.CHARTS_TOKEN }}
+          path: helm-charts
+
+      - name: Bump image tag in values.yaml
+        run: |
+          FILE=helm-charts/charts/deploy-test-app/Values.yaml
+          NEW_TAG=${{ github.sha }}
+          sed -i "s#^\(\s*tag:\s*\).*#\1${NEW_TAG}#" "$FILE"
+          git -C helm-charts status
+          git -C helm-charts diff || true
+
+      - name: Commit & push to helm-charts
+        run: |
+          cd helm-charts
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add charts/deploy-test-app/values.yaml
+          git commit -m "chore: deploy-test-app image tag -> ${{ github.sha }}"
+          git push
